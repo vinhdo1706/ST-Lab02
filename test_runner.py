@@ -151,6 +151,37 @@ def read_cases(path):
     return frame.to_dict(orient='records')
 
 
+def validate_case_inputs(req, data):
+    required = {
+        'REQ-02': ('actions',),
+        'REQ-07': ('mode', 'voucher'),
+        'REQ-09': ('subtotal', 'area'),
+        'REQ-10': ('method', 'approved'),
+        'REQ-15': ('actions', 'method', 'approved'),
+    }[req]
+    missing = [key for key in required if key not in data]
+    if missing:
+        raise CaseConfigurationError('Missing test input: ' + ', '.join(missing))
+    if req in ('REQ-02', 'REQ-15'):
+        actions = data['actions']
+        if not isinstance(actions, list) or any(
+            not isinstance(item, list) or len(item) != 2 for item in actions
+        ):
+            raise CaseConfigurationError('actions must be a list of [sku, quantity]')
+    if req == 'REQ-07':
+        if data['mode'] not in ('discount', 'checkout', 'reuse_after_success'):
+            raise CaseConfigurationError('Unknown promotion mode')
+        if data['mode'] == 'checkout':
+            missing = [key for key in ('method', 'approved') if key not in data]
+            if missing:
+                raise CaseConfigurationError('Missing checkout input: ' + ', '.join(missing))
+    if req == 'REQ-09':
+        try:
+            Decimal(str(data['subtotal']))
+        except (ValueError, TypeError, ArithmeticError) as exc:
+            raise CaseConfigurationError('subtotal is not a valid decimal') from exc
+
+
 def evaluate(row, repeated_ids):
     start = time.perf_counter()
     actual = {}
@@ -174,11 +205,19 @@ def evaluate(row, repeated_ids):
             raise CaseConfigurationError(f'Invalid input/expected JSON: {exc.msg}') from exc
         if not isinstance(inputs, dict) or not isinstance(expected, dict):
             raise CaseConfigurationError('input_json and expected_json must be JSON objects')
+        validate_case_inputs(req, inputs)
         app, customer, cart = fresh_state(row['fixture_key'])
-        actual = run_business_case(req, app, customer, cart, inputs)
-        differences = check_expected(expected, actual)
-        status = 'FAIL' if differences else 'PASS'
-        error = '; '.join(differences)
+        try:
+            actual = run_business_case(req, app, customer, cart, inputs)
+        except CaseConfigurationError:
+            raise
+        except Exception as exc:
+            status = 'FAIL'
+            error = f'UNEXPECTED_APPLICATION_EXCEPTION: {type(exc).__name__}: {exc}'
+        else:
+            differences = check_expected(expected, actual)
+            status = 'FAIL' if differences else 'PASS'
+            error = '; '.join(differences)
     except (CaseConfigurationError, KeyError, TypeError, ValueError, IndexError) as exc:
         status = 'BLOCKED'
         error = f'TEST_SETUP: {type(exc).__name__}: {exc}'
@@ -268,6 +307,8 @@ def main():
     started_at = datetime.now(timezone.utc).isoformat(timespec='seconds')
     try:
         rows = read_cases(Path(args.cases))
+        if not rows:
+            raise CaseConfigurationError('CSV contains no test cases')
     except Exception as exc:
         print(f'BLOCKED: Không thể đọc dữ liệu kiểm thử: {type(exc).__name__}: {exc}')
         raise SystemExit(2) from exc

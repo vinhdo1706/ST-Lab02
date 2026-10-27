@@ -63,6 +63,6 @@ Runner tạo ra:
 
 ## 8. Phân biệt lần chạy cục bộ và Google Colab
 
-Chạy bằng Python tại máy cục bộ chỉ là kiểm tra kỹ thuật bổ trợ. Đầu ra trong repository hiện được đồng bộ từ lần chạy **Google Colab ngày 27/10/2026, 21:42:26 (giờ Việt Nam)**, với 33 PASS, 0 FAIL và 0 BLOCKED. Notebook lưu output của lần chạy này.
+Chạy bằng Python tại máy cục bộ chỉ là kiểm tra kỹ thuật bổ trợ. Đầu ra trong repository hiện được đồng bộ từ lần chạy **Google Colab ngày 27/10/2026, 23:27:02 (giờ Việt Nam)**, với 33 PASS, 0 FAIL và 0 BLOCKED. Notebook lưu output của lần chạy này.
 
 Việc xác minh độc lập oracle, kiểm tra sâu kết quả và phân tích nguyên nhân lỗi nếu xuất hiện được thực hiện ở bước kiểm chứng sau; các minh chứng ảnh chụp E01–E10 được hoàn thiện riêng. Không xem tỷ lệ PASS của một lần chạy là bằng chứng đầy đủ về chất lượng toàn bộ ứng dụng.

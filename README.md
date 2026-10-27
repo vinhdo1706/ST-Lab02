@@ -46,7 +46,7 @@ Tên file, tên hàm, mã yêu cầu, mã test case và các trường dữ li�
 
 ## 3. Kết quả thực thi trên Google Colab
 
-Lần chạy được lưu trong project diễn ra lúc **21:42:26 ngày 27/10/2026 (giờ Việt Nam)**, tương ứng `2026-10-27T14:42:26+00:00` (UTC).
+Lần chạy được lưu trong project diễn ra lúc **23:27:02 ngày 27/10/2026 (giờ Việt Nam)**, tương ứng `2026-10-27T16:27:02+00:00` (UTC).
 
 | Yêu cầu | Số test case | PASS | FAIL | BLOCKED |
 |---|---:|---:|---:|---:|
