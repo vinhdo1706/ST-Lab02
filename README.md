@@ -1,94 +1,111 @@
 # STLab02 — EduCommerce Test Case Execution
 
-**Course:** Software Testing  
-**Assignment:** STLab02 – Test Case Execution  
-**Student ID:** 20110112  
-**Student:** Đỗ Thành Vinh  
-**Selected REQs:** REQ-02, REQ-07, REQ-09, REQ-10, REQ-15  
-**Baseline P3:** 1A / 2A / 3A — 5 REQs, CSV + HTML dashboard, original application source unchanged.
+**Môn học:** Kiểm thử phần mềm (Software Testing)  
+**Bài thực hành:** STLab02 – Test Case Execution  
+**MSSV:** 20110112  
+**Sinh viên:** Đỗ Thành Vinh  
+**Yêu cầu được chọn:** REQ-02, REQ-07, REQ-09, REQ-10, REQ-15  
+**Phạm vi:** 5 yêu cầu nghiệp vụ; kiểm thử từ CSV bằng Python; báo cáo kết quả và dashboard HTML. Mã nguồn ứng dụng EduCommerce gốc được giữ nguyên.
 
-## Project files and P6 Colab execution output
+## 1. Giới thiệu
 
-| File | Purpose |
+Dự án thực hiện kiểm thử dựa trên yêu cầu đối với module **EduCommerce** trong tài liệu hướng dẫn STLab02. Bộ kiểm thử sử dụng dữ liệu đầu vào và kết quả mong đợi được xác định từ các tiêu chí chấp nhận (*acceptance criteria*), sau đó chạy tự động trên Google Colab.
+
+Năm yêu cầu được kiểm thử gồm:
+
+| Mã yêu cầu | Nội dung |
 |---|---|
-| `ecommerce_app.py` | **Original** EduCommerce source extracted from the Instruction, section 2.6, without business logic edits |
-| `test_runner.py` | Student-level data-driven test runner; supports the five selected REQs |
-| `test_cases.csv` | 33 original requirement-based cases; retains untouched expected values |
-| `traceability_design.csv` | REQ→COND→TS→TC planning matrix |
-| `STLab02_EduCommerce.ipynb` | Notebook with the completed Google Colab run and cell outputs |
-| `requirement_analysis.md` | Requirement Analysis, conditions, scenarios, case trace and risk notes |
-| `code_explanation.md` | Technical explanation of fixture, CSV reader, dispatch, assertion and reporter |
-| `problem_solving_answers.md` | Part 3: eight scenarios, expected/risk, file/function, change implications and test ideas |
-| `interview_answers.md` | Part 4: 20 interviews + three code-review responses |
-| `reports/test_execution.csv` | **COLAB P6 EXECUTION** raw case execution; subject to independent P7 verification |
-| `reports/test_summary.csv` | Per-requirement result counts from Colab execution |
-| `reports/traceability_execution.csv` | Design-to-run trace from Colab execution |
-| `reports/test_dashboard.html` | Standalone HTML (tables + bar chart), Colab execution |
-| `reports/run_metadata.json` | Colab execution time and counts |
+| REQ-02 | Số lượng thêm vào giỏ phải là số nguyên dương; cùng SKU được cộng dồn. |
+| REQ-07 | Voucher không hợp lệ hoặc đã dùng phải bị từ chối; chỉ ghi nhận đã dùng khi đơn hàng thành công. |
+| REQ-09 | Phí vận chuyển phụ thuộc khu vực và ngưỡng tổng tiền hàng. |
+| REQ-10 | COD/ONLINE có trạng thái thanh toán riêng; giao dịch bị từ chối không được tạo đơn. |
+| REQ-15 | Một SKU thiếu tồn kho phải làm cả đơn bị từ chối, không trừ tồn kho của SKU khác. |
 
-**Important:** This is a **P6 technical package synchronized with the observed Colab execution on 2026-10-27 14:42:26 UTC** (33 loaded, 33 PASS, 0 FAIL, 0 BLOCKED). These are real runner outputs and an executed notebook, not an independent P7 oracle audit, a completed P8 evidence collection, or the P9 PDF draft. Do not submit this package alone as the final assignment.
+REQ-06, REQ-08 và REQ-11 là ví dụ đã hướng dẫn trong tài liệu Instruction, **không nằm trong năm yêu cầu tự chọn** của bài này.
 
-## How to run on Google Colab (required for the assignment)
+## 2. Cấu trúc dự án
 
-1. Go to https://colab.research.google.com and upload/open `STLab02_EduCommerce.ipynb` (File → Upload notebook).
-2. Run the first cell; verify the Python version and current directory.
-3. On the **Upload source and CSV** cell, select the three files from the same extracted ZIP: `ecommerce_app.py`, `test_runner.py`, `test_cases.csv`.
-4. Run the **test runner** cell. Review each line, especially FAIL/BLOCKED; take a real screenshot of the run with timestamp/summary (E07).
-5. Run the result summary and dashboard cells; review `reports/test_execution.csv`, `reports/test_summary.csv` and `reports/test_dashboard.html`.
-6. Run the last cell to download `STLab02_Colab_Execution.zip` and send this output or source screenshots in the chat to verify that the Colab run matches the technical files.
-7. Keep the 3 original source/data files separately: the Colab archive only includes **execution outputs**.
+| Tệp / thư mục | Chức năng |
+|---|---|
+| `ecommerce_app.py` | Mã nguồn EduCommerce gốc từ tài liệu Instruction, mục 2.6; không sửa logic nghiệp vụ. |
+| `test_runner.py` | Chương trình đọc dữ liệu, tạo fixture, chạy các test case, so sánh kết quả và xuất báo cáo. |
+| `test_cases.csv` | Bộ 33 test case của năm yêu cầu đã chọn; chứa dữ liệu đầu vào và expected độc lập. |
+| `traceability_design.csv` | Ma trận truy vết REQ → COND → TS → TC. |
+| `STLab02_EduCommerce.ipynb` | Notebook Google Colab chứa lần chạy kiểm thử và kết quả các cell. |
+| `requirement_analysis.md` | Phân tích yêu cầu, điều kiện, tình huống, test case và rủi ro. |
+| `code_explanation.md` | Giải thích fixture, CSV reader, dispatcher, assertion, exception handling và reporter. |
+| `problem_solving_answers.md` | Câu trả lời tám tình huống ở Phần 3. |
+| `interview_answers.md` | Câu trả lời 20 câu hỏi và ba bài Code Interview ở Phần 4. |
+| `reports/test_execution.csv` | Kết quả thực thi chi tiết của từng test case trên Colab. |
+| `reports/test_summary.csv` | Tổng hợp số test PASS/FAIL/BLOCKED theo từng yêu cầu. |
+| `reports/traceability_execution.csv` | Ma trận truy vết đến mã lần chạy (RUN) và trạng thái. |
+| `reports/test_dashboard.html` | Dashboard độc lập gồm thống kê, biểu đồ và bảng kết quả. |
+| `reports/run_metadata.json` | Thông tin thời gian chạy, số case và các yêu cầu được chọn. |
 
-**Colab runtime is temporary.** Your local VS Code folder under `Work/HK1_2627/Software Testing/Labs/ST-Lab02/` is the persistent source-of-truth location; upload the files from there when needed. If you rerun Colab, refresh the `reports/` files with that new run together so all timestamps agree. The test input `test_cases.csv` is not modified by the runner.
+Tên file, tên hàm, mã yêu cầu, mã test case và các trường dữ liệu giữ nguyên để phục vụ việc thực thi và truy vết.
 
-## Local test run in VS Code / PowerShell (optional)
+## 3. Kết quả thực thi trên Google Colab
 
-Python 3.10+ and pandas are required to run the current `test_runner.py`.
+Lần chạy được lưu trong project diễn ra lúc **21:42:26 ngày 27/10/2026 (giờ Việt Nam)**, tương ứng `2026-10-27T14:42:26+00:00` (UTC).
+
+| Yêu cầu | Số test case | PASS | FAIL | BLOCKED |
+|---|---:|---:|---:|---:|
+| REQ-02 | 7 | 7 | 0 | 0 |
+| REQ-07 | 7 | 7 | 0 | 0 |
+| REQ-09 | 6 | 6 | 0 | 0 |
+| REQ-10 | 6 | 6 | 0 | 0 |
+| REQ-15 | 7 | 7 | 0 | 0 |
+| **Tổng** | **33** | **33** | **0** | **0** |
+
+**Tỷ lệ PASS của các case thực thi:** 100% (33/33). Tổng số dòng được nạp bằng tổng PASS + FAIL + BLOCKED. Các tệp trong `reports/` và output của notebook là kết quả chạy thực tế; kết quả PASS không đồng nghĩa ứng dụng không có lỗi ngoài phạm vi đã kiểm thử.
+
+## 4. Hướng dẫn chạy trên Google Colab
+
+1. Truy cập [Google Colab](https://colab.research.google.com/), chọn **File → Upload notebook** và mở `STLab02_EduCommerce.ipynb`.
+2. Chạy cell đầu tiên để xem phiên bản Python và thư mục làm việc.
+3. Tại cell **Upload source và CSV**, tải lên đồng thời ba file từ cùng phiên bản project: `ecommerce_app.py`, `test_runner.py`, `test_cases.csv`.
+4. Chạy cell thực thi bộ test. Kiểm tra danh sách case, trạng thái PASS/FAIL/BLOCKED, thời gian chạy và thông báo lỗi nếu có.
+5. Chạy các cell hiển thị bảng tổng hợp và HTML dashboard.
+6. Chạy cell cuối để tải `STLab02_Colab_Execution.zip`, chứa các tệp kết quả trong `reports/`.
+7. Lưu kết quả tải về và cập nhật đồng bộ các file trong thư mục `reports/` của project nếu thực hiện lần chạy mới.
+
+**Lưu ý:** Runtime Colab có thể bị xóa hoặc ngắt kết nối. Thư mục `Work/HK1_2627/Software Testing/Labs/ST-Lab02/` trên máy cá nhân là nơi lưu source lâu dài. Notebook tải lên Colab phải tương ứng với ba file source/data cùng phiên bản.
+
+## 5. Chạy cục bộ bằng VS Code (tùy chọn)
+
+Cần Python 3.10 trở lên và thư viện `pandas`. Mở terminal tại thư mục `Labs/ST-Lab02`, sau đó chạy:
 
 ```powershell
-cd "Work\HK1_2627\Software Testing\Labs\ST-Lab02"
 py -3 -m pip install pandas
 py -3 test_runner.py
 ```
 
-If you open VS Code directly in `Labs/ST-Lab02`, simply run `py -3 test_runner.py` from its terminal. Do not run the `pip install` command if pandas is already installed. The optional local run does **not** replace the required Google Colab execution.
+Nếu `pandas` đã được cài, không cần chạy lại lệnh cài thư viện. Việc chạy cục bộ chỉ để hỗ trợ kiểm tra; **không thay thế kết quả Google Colab** theo yêu cầu bài thực hành.
 
-### How results are calculated
+## 6. Nguyên tắc đánh giá kết quả
 
-- PASS: actual matches all keys specified in `expected_json` (including expected business exceptions).
-- FAIL: valid test case disagrees with acceptance-rule expected, or an unexpected application error occurs.
-- BLOCKED: case cannot be meaningfully executed due to missing/malformed data, duplicate ID, unsupported fixture or schema/dispatch issue.
-- Counts: `loaded = pass + fail + blocked`; a parsing failure must not disappear from report rows.
-- Pass rate among executed cases: `PASS / (PASS + FAIL)`. Also inspect BLOCKED separately; 100% here does **not** prove all input rows executed.
+- **PASS:** Kết quả thực tế khớp tất cả các trường được yêu cầu trong `expected_json`, kể cả ngoại lệ nghiệp vụ được dự kiến.
+- **FAIL:** Test case hợp lệ có kết quả không khớp expected, hoặc xuất hiện lỗi ứng dụng ngoài dự kiến.
+- **BLOCKED:** Chưa thể đánh giá hành vi ứng dụng do thiếu/sai dữ liệu, mã định danh trùng, fixture không hợp lệ hoặc lỗi thiết lập/đọc dữ liệu.
+- **Tính đầy đủ:** `loaded = PASS + FAIL + BLOCKED`; dòng dữ liệu lỗi không được âm thầm bỏ khỏi báo cáo.
+- **Tỷ lệ PASS trong số case thực thi:** `PASS / (PASS + FAIL)` khi mẫu số lớn hơn 0. Cần xem riêng số BLOCKED để không nhầm tỷ lệ PASS cao với độ bao phủ đầy đủ.
 
-The mandatory CSV columns are:
+Các cột dữ liệu bắt buộc của CSV:
 
 ```text
 test_case_id, requirement_id, condition_id, scenario_id, title, priority, precondition, fixture_key, input_json, expected_type, expected_json, execution_status, actual_result, error_message, evidence_reference
 ```
 
-Two extra documentation columns (`case_type` and `test_steps`) make individual test cases easier to read. The last four execution-related columns in the source CSV intentionally remain blank; the runner writes actual outputs into `reports/` instead.
+Hai cột bổ sung `case_type` và `test_steps` hỗ trợ đọc test case. Các trường đầu ra thực thi trong CSV đầu vào được để trống; runner ghi kết quả vào `reports/`, **không ghi đè expected gốc**.
 
-## GitHub repository handoff (Task T13 / P6)
+## 7. Nguồn gốc và giới hạn
 
-GitHub account connection is already available, but a separate **Lab02 repository has not been created**. Create an accessible repository for the course and upload the project files. The Colab results in this package are available for P6 handoff. The submission must have `ecommerce_app.py`, `test_runner.py`, `test_cases.csv`, `README.md`, source documents and execution report. Check that the repository is accessible without a login if a public link is required, and never commit secrets or personal tokens. The final PDF and its GitHub link are a later P9–P11 task.
+- `ecommerce_app.py` được lấy từ khối mã trong `STLab02 - Test Case Execution (Instruction)(1).docx`, mục 2.6, và được bảo toàn về logic nghiệp vụ.
+- Runner, test data và các tài liệu phân tích được xây dựng để đáp ứng `STLab02 - Test Case Execution (Requirement)(1).docx`.
+- EduCommerce là ứng dụng mô phỏng chạy trong bộ nhớ; không có cơ sở dữ liệu lưu trữ, cổng thanh toán thực tế hoặc mô phỏng tranh chấp đồng thời.
+- Các trường hợp chưa được kiểm thử và những điểm requirement cần làm rõ được ghi trong `requirement_analysis.md`.
+- Nếu phát hiện FAIL, cần xác minh expected, dữ liệu và fixture trước khi kết luận lỗi sản phẩm. Không chỉnh expected để làm tăng PASS.
 
-## Source attribution and limits
+**Repository:** https://github.com/vinhdo1706/ST-Lab02
 
-- `ecommerce_app.py`: verbatim code block from `STLab02 - Test Case Execution (Instruction)(1).docx` §2.6. No intended fixes to source logic.
-- `test_runner.py`, CSV and all supporting notes: new P6 work based on the Requirement and acceptance rules.
-- The application is in-memory, no persistent database, real payment gateway, or concurrency simulation.
-- REQ-06/REQ-08/REQ-11 appear in the Instruction as worked examples and are **not** among the five newly selected REQs.
-- Source code may contain defects outside selected REQs. A 100% local PASS does not establish full product correctness.
-
-## Scope / evidence handoff
-
-- P6: create and hand off source, data, notebook, reports and written Part 3/4 answers.
-- P7: independently verify outputs, reproduce suspected defects, check regressions and correct verified technical issues.
-- P8: complete screenshots E01–E10 and evidence descriptions.
-- P9: compose the PDF report draft.
-- P10: final candidate review and report/repository synchronization.
-- P11: independent grading-style audit; submit only when permitted.
-
-## P6 Colab handoff record
-
-The five files in `reports/` in this synchronized copy were read from the submitted `STLab02_Colab_Execution.zip`. The notebook was read from the submitted `STLab02_EduCommerce(1).ipynb`. The original `ecommerce_app.py`, `test_runner.py`, and `test_cases.csv` are byte-for-byte the same as the prior P6 project package. Colab run timestamp: `2026-10-27T14:42:26+00:00`; status: 33 PASS, 0 FAIL, 0 BLOCKED. P7 must still independently review test correctness and completeness. Two untested risks for the no-FAIL branch are documented in `requirement_analysis.md` §F.
+Báo cáo PDF hoàn chỉnh là sản phẩm nộp bài riêng, được bổ sung sau khi hoàn tất kiểm chứng và minh chứng. Repository này chứa source, dữ liệu và kết quả thực thi để hỗ trợ tái hiện.

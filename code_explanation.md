@@ -1,57 +1,68 @@
-# STLab02 – Part 2: Explanation of test code (P6 technical notes)
+# STLab02 – Phần 2: Giải thích mã kiểm thử
 
-**Scope:** Explains the actual P6 code. Not a report draft or verified screenshot collection. Evidence E01–E10 is scheduled for P8.
+Tài liệu này giải thích cách hoạt động của những thành phần kiểm thử đã xây dựng. Các minh chứng E01–E10 sẽ được kiểm tra và hoàn thiện riêng; phần giải thích này không thay thế ảnh chụp hoặc nhật ký thực thi.
 
-## 1. Application baseline
+## 1. Mã nguồn ứng dụng ban đầu
 
-`ecommerce_app.py` is extracted **without business-rule edits** from the Instruction's `%%writefile ecommerce_app.py` block (§2.6). It defines Catalog, Cart, Inventory, Promotions, Shipping, Payments, Checkout and `fixture()`. The original source is intentionally allowed to contain sample bugs; expected assertions follow acceptance rules rather than mirroring implementation.
+`ecommerce_app.py` được lấy từ khối `%%writefile ecommerce_app.py` trong Instruction, mục 2.6, **không chỉnh sửa quy tắc nghiệp vụ**. Ứng dụng gồm các lớp Catalog, Cart, Inventory, Promotions, Shipping, Payments, Checkout và hàm `fixture()`. Bộ kiểm thử xác định expected từ tiêu chí chấp nhận, không sao chép hành vi hiện tại của chương trình làm chuẩn.
 
-## 2. Fixture/setup
+## 2. Fixture và dữ liệu chuẩn bị
 
-`test_runner.fresh_state(fixture_key)` returns a fresh `Checkout`, `Customer` and `Cart` for **every** row. Fixture keys are `empty` or supported keys from the Instruction (`300k`, `499999`, `500k`, `600k`, `1000k`, `1500k`). For `empty`, product stocks start A=20, B=15, C=12 and the cart has no lines. For `300k`, B=1; `600k`, A=3. Independent fixtures prevent state contamination via product stock, voucher usage, orders, and payments.
+`test_runner.fresh_state(fixture_key)` tạo `Checkout`, `Customer` và `Cart` mới cho **mỗi dòng test case**. Các fixture key được hỗ trợ là `empty`, `300k`, `499999`, `500k`, `600k`, `1000k`, `1500k`.
 
-## 3. CSV reader and validation
+- Với `empty`, giỏ hàng rỗng; tồn kho khởi tạo là A=20, B=15, C=12.
+- Với `300k`, giỏ có B=1; với `600k`, giỏ có A=3.
+- Fixture độc lập tránh việc tồn kho, trạng thái voucher, đơn hàng hoặc giao dịch của case trước ảnh hưởng case sau.
 
-`pandas.read_csv(..., dtype=str, keep_default_na=False, encoding='utf-8-sig')` reads the CSV while protecting test identifiers and empty fields. `read_cases` checks mandatory column headers. Per row, `evaluate` checks unique ID, REQ/expected_type compatibility, trace IDs, then parses `input_json` and `expected_json` with `json.loads`. Invalid row data becomes **BLOCKED** and retains a result row; a file without the mandatory headers blocks the whole run with an explicit error and exit code 2, rather than reporting a misleading PASS.
+## 3. Đọc CSV và kiểm tra dữ liệu
 
-## 4. Test dispatcher
+Runner sử dụng `pandas.read_csv(..., dtype=str, keep_default_na=False, encoding='utf-8-sig')` để đọc CSV và giữ nguyên ID cũng như các trường rỗng. `read_cases()` kiểm tra các cột bắt buộc. Với mỗi dòng, `evaluate()` kiểm tra TC ID trùng, sự phù hợp giữa REQ và `expected_type`, thông tin truy vết, rồi dùng `json.loads()` để đọc `input_json` và `expected_json`.
 
-`run_business_case` switches by `requirement_id` and invokes the real application function(s):
+- Dòng dữ liệu sai được ghi là **BLOCKED**, vẫn có một dòng kết quả tương ứng.
+- Nếu CSV thiếu các cột bắt buộc, toàn bộ lần chạy dừng với thông báo cụ thể và mã thoát 2; không báo PASS sai lệch.
 
-| REQ | Target | Checked return and state |
+## 4. Điều phối test case đến hàm nghiệp vụ
+
+Hàm `run_business_case()` sử dụng `requirement_id` để chọn thao tác trên ứng dụng thật:
+
+| REQ | Hàm được gọi | Kết quả và trạng thái cần kiểm |
 |---|---|---|
-| REQ-02 | `Cart.add()` and `Cart.subtotal()` | exception, line SKUs/quantities, subtotal |
-| REQ-07 | `Promotions.discount()` or `Checkout.place()` | expected voucher error, `customer.used_codes`, order_count, payment status |
-| REQ-09 | `Shipping.calculate(Decimal(subtotal), area)` | exact shipping fee |
-| REQ-10 | `Checkout.place()` | payment status, order_count, charges; declined must not create order |
-| REQ-15 | `Checkout.place()` / `Inventory.reserve()` | stock_after of all SKUs, order_count, charge_count and exception |
+| REQ-02 | `Cart.add()`, `Cart.subtotal()` | Ngoại lệ, SKU/số lượng từng dòng giỏ, subtotal. |
+| REQ-07 | `Promotions.discount()` hoặc `Checkout.place()` | Lỗi voucher kỳ vọng, `customer.used_codes`, số đơn, trạng thái thanh toán. |
+| REQ-09 | `Shipping.calculate(Decimal(subtotal), area)` | Phí vận chuyển chính xác. |
+| REQ-10 | `Checkout.place()` | Trạng thái thanh toán, số đơn, số lần ghi nhận charge; declined không được tạo đơn. |
+| REQ-15 | `Checkout.place()` / `Inventory.reserve()` | Tồn kho sau thao tác của các SKU, số đơn, số charge và ngoại lệ. |
 
-Each test row contains explicit `input_json` and `expected_json` from the corresponding rule. A returned Order ID is not the sole assertion; outcome and side effects applicable to the selected requirement are checked.
+Mỗi dòng CSV chỉ rõ `input_json` và `expected_json`. **Có Order ID không phải điều kiện PASS duy nhất**: các tác động phụ liên quan đến REQ cũng được kiểm tra.
 
-## 5. Oracle/assertions and expected exception
+## 5. Oracle, assertion và ngoại lệ mong đợi
 
-`check_expected` recursively compares all keys declared by `expected_json` with actual values. This allows actual to contain additional diagnostic fields while still enforcing every stated expectation. `run_business_case` catches **expected business `ValueError`** from the application and returns `ValueError:MESSAGE` as a comparable actual. Therefore a correct exception can result in PASS; a missing/wrong exception results in FAIL.
+`check_expected()` so sánh đệ quy các trường mà `expected_json` quy định với kết quả thực tế. Kết quả thực tế có thể chứa thêm dữ liệu chẩn đoán, nhưng không được thiếu hoặc làm sai các trường expected đã nêu.
 
-## 6. try/except and status
+Khi nghiệp vụ phát sinh `ValueError` được dự kiến, `run_business_case()` ghi dưới dạng `ValueError:MESSAGE` để đối chiếu. Vì vậy, nhận **đúng ngoại lệ mong đợi có thể là PASS**; không nhận ngoại lệ hoặc nhận ngoại lệ khác là FAIL.
 
-- `PASS`: oracle matches actual on all expected keys.
-- `FAIL`: business behavior differs from an unambiguous expected oracle, or an unexpected runtime exception occurred during a valid case.
-- `BLOCKED`: test case cannot be executed reliably because test data, IDs, schema, fixture or dispatch are invalid. Data errors do not silently disappear.
+## 6. Xử lý ngoại lệ và phân loại trạng thái
 
-Malformed CSV rows retain ID/REQ when available. **Do not equate a FAIL directly with confirmed software defect** before P7 replay/verification.
+- **PASS:** Actual khớp mọi trường expected.
+- **FAIL:** Hành vi nghiệp vụ không khớp oracle hợp lệ, hoặc ứng dụng phát sinh lỗi ngoài dự kiến khi dữ liệu test hợp lệ.
+- **BLOCKED:** Không thể thực thi hoặc đánh giá công bằng do lỗi dữ liệu, ID, schema, fixture hoặc dispatcher. Dòng lỗi dữ liệu không được âm thầm biến mất.
 
-## 7. Reporter and traceability
+Với dòng CSV lỗi, runner giữ `test_case_id` và `requirement_id` nếu có thể xác định được. **FAIL chưa đủ để khẳng định bug của sản phẩm**; cần đối chiếu lại oracle, fixture và cách tái hiện.
 
-The runner writes:
+## 7. Xuất báo cáo và truy vết
 
-- `reports/test_execution.csv` – one row per CSV case with expected, actual, status, error, execution_time_ms, UTC timestamp and evidence reference;
-- `reports/traceability_execution.csv` – REQ→COND→TS→TC→RUN and status;
-- `reports/test_summary.csv` – counts by requirement;
-- `reports/run_metadata.json` – totals, timestamp and selected requirements;
-- `reports/test_dashboard.html` – self-contained HTML with a per-REQ SVG bar chart and test detail table.
+Runner tạo ra:
 
-`loaded = PASS + FAIL + BLOCKED`. `pass_rate_executed = PASS/(PASS+FAIL)` when denominator >0; BLOCKED is shown separately. This avoids a visually misleading 100% pass rate when some rows never ran. The input `test_cases.csv` is **never overwritten by the runner**.
+- `reports/test_execution.csv`: kết quả từng case gồm expected, actual, status, error, `execution_time_ms`, thời điểm UTC và evidence reference.
+- `reports/traceability_execution.csv`: liên kết REQ → COND → TS → TC → RUN và trạng thái.
+- `reports/test_summary.csv`: tổng hợp số lượng theo từng requirement.
+- `reports/run_metadata.json`: số case, thời gian chạy và danh sách REQ được chọn.
+- `reports/test_dashboard.html`: trang HTML tự chứa gồm biểu đồ cột SVG theo REQ và bảng chi tiết case.
 
-## 8. Local trial vs Colab verification
+`loaded = PASS + FAIL + BLOCKED`. Khi mẫu số dương, `pass_rate_executed = PASS/(PASS+FAIL)`; số BLOCKED được báo riêng. Runner **không ghi đè** dữ liệu expected trong `test_cases.csv`.
 
-A local Python run is a preliminary technical exercise in P6, not E07 Colab evidence. Colab must run the same three source/data files from the P6 package; its own execution output, timestamp and reports will then be collected. Actual FAILs, root cause and regression belong to P7; final evidence verification belongs to P8.
+## 8. Phân biệt lần chạy cục bộ và Google Colab
+
+Chạy bằng Python tại máy cục bộ chỉ là kiểm tra kỹ thuật bổ trợ. Đầu ra trong repository hiện được đồng bộ từ lần chạy **Google Colab ngày 27/10/2026, 21:42:26 (giờ Việt Nam)**, với 33 PASS, 0 FAIL và 0 BLOCKED. Notebook lưu output của lần chạy này.
+
+Việc xác minh độc lập oracle, kiểm tra sâu kết quả và phân tích nguyên nhân lỗi nếu xuất hiện được thực hiện ở bước kiểm chứng sau; các minh chứng ảnh chụp E01–E10 được hoàn thiện riêng. Không xem tỷ lệ PASS của một lần chạy là bằng chứng đầy đủ về chất lượng toàn bộ ứng dụng.

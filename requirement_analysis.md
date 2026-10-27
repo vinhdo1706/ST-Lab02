@@ -1,11 +1,11 @@
-# STLab02 – Requirement Analysis & Test Design (P6 – technical artifact, not PDF report)
+# STLab02 – Requirement Analysis & Test Design
 
-**Authoritative sources:** STLab02 Requirement (Part 1) + STLab02 Instruction (1.2, 2.6).
-**Frozen P3 scope:** REQ-02, REQ-07, REQ-09, REQ-10, REQ-15. REQ-06/08/11 are worked examples and are not selected.
+**Nguồn yêu cầu:** STLab02 Requirement (Phần 1) và STLab02 Instruction (mục 1.2, 2.6).
+**Phạm vi đã chốt:** REQ-02, REQ-07, REQ-09, REQ-10, REQ-15. REQ-06/08/11 là ví dụ có sẵn trong Instruction, không thuộc bộ yêu cầu được lựa chọn.
 
-## A. Requirement analysis
+## A. Phân tích yêu cầu
 
-| REQ | Module | Actor | Acceptance rule | Precondition | Input | Output/oracle | Risk | Clarification |
+| REQ | Module | Tác nhân | Quy tắc chấp nhận | Điều kiện trước | Đầu vào | Kết quả/oracle | Rủi ro | Điểm cần làm rõ |
 |---|---|---|---|---|---|---|---|---|
 | REQ-02 | Cart | Customer | quantity là số nguyên dương; cùng SKU được cộng dồn | Cart có catalog hợp lệ | SKU và quantity của từng lần add | CartLine và subtotal hoặc INVALID_QUANTITY | Số lượng sai vẫn thay giỏ; trùng SKU thành nhiều dòng | Có cần chặn bool? Python coi True là int; cần BA/PO xác nhận nếu mở rộng. |
 | REQ-07 | Promotion | Customer | Voucher không hợp lệ/used phải bị từ chối; chỉ đánh dấu used sau khi tạo order thành công | Mã voucher, customer và giỏ hợp lệ | voucher, customer.used_codes, kết quả payment | Voucher exception, used_codes, số order | Mã bị consume khi declined; tái dùng mã đã used | Phạm vi REQ-07 không mặc định bao gồm chính sách ngưỡng SAVE10 của REQ-06. |
@@ -13,11 +13,11 @@
 | REQ-10 | Payments | Customer | COD=PENDING_COD; ONLINE approved mới PAID; declined không tạo order | Customer authenticated và cart có hàng | method, approved, key | order status, số order, số charge hoặc PAYMENT_DECLINED | Tạo order khi declined; ghi charge sai | Rollback stock sau declined thuộc REQ-08 worked example, không gán nhầm cho REQ-10. |
 | REQ-15 | Inventory | Customer | Nếu bất kỳ SKU thiếu stock phải từ chối toàn đơn, SKU khác không bị trừ | Giỏ có nhiều SKU và stock xác định | SKU, quantity, tồn kho ban đầu | OUT_OF_STOCK/Order; tồn kho của toàn bộ SKU | Trừ SKU đủ trước khi phát hiện SKU thiếu | Atomicity ở đây là mô hình in-memory tuần tự, không chứng minh concurrency. |
 
-## B. Condition → Scenario structure
+## B. Cấu trúc Test Condition → Test Scenario
 
-Conditions are axes of behavior. Scenarios state WHAT to test; concrete inputs and expected values appear in `test_cases.csv`.
+Test Condition xác định khía cạnh hoặc trạng thái cần kiểm tra. Test Scenario diễn đạt **điều gì cần kiểm thử**; dữ liệu cụ thể và expected tương ứng được ghi trong `test_cases.csv`.
 
-| Requirement | Condition | Scenario | Test cases |
+| Yêu cầu | Điều kiện | Tình huống | Test case |
 |---|---|---|---|
 | REQ-02 | COND-CART-02 | TS-CART-VALID | TC-CART-001 |
 | REQ-02 | COND-CART-02 | TS-CART-AGGREGATE | TC-CART-002, TC-CART-003 |
@@ -34,12 +34,12 @@ Conditions are axes of behavior. Scenarios state WHAT to test; concrete inputs a
 | REQ-15 | COND-INV15-01 | TS-INV15-REJECT | TC-INV15-001, TC-INV15-002, TC-INV15-003, TC-INV15-006 |
 | REQ-15 | COND-INV15-02 | TS-INV15-SUCCESS | TC-INV15-004, TC-INV15-005, TC-INV15-007 |
 
-## C. Detailed cases and traceability
+## C. Test case chi tiết và truy vết
 
-The CSV is the canonical executable detailed test-case artifact. It contains: test_case_id, REQ/COND/TS, title, priority, precondition, fixture_key, test_steps, input_json, expected_type, expected_json, execution fields.
-Execution fields in the input file stay empty; the runner writes separate files under `reports/`. `traceability_design.csv` lists REQ→COND→TS→TC; `reports/traceability_execution.csv` adds RUN→status after execution.
+CSV là nguồn dữ liệu chi tiết của bộ test có thể thực thi. Các trường gồm `test_case_id`, REQ/COND/TS, `title`, `priority`, `precondition`, `fixture_key`, `test_steps`, `input_json`, `expected_type`, `expected_json` và các trường kết quả chạy.
+Các trường kết quả trong CSV đầu vào được để trống; runner ghi dữ liệu vào các file riêng thuộc `reports/`. `traceability_design.csv` thể hiện REQ → COND → TS → TC; `reports/traceability_execution.csv` bổ sung RUN và trạng thái sau khi chạy.
 
-| TC | REQ | Condition | Scenario | Kind | Input | Expected |
+| TC | REQ | Điều kiện | Tình huống | Loại | Đầu vào | Expected |
 |---|---|---|---|---|---|---|
 | TC-CART-001 | REQ-02 | COND-CART-02 | TS-CART-VALID | positive | `{"actions":[["A",1]]}` | `{"exception":null,"lines":[{"sku":"A","quantity":1}],"subtotal":"200000"}` |
 | TC-CART-002 | REQ-02 | COND-CART-02 | TS-CART-AGGREGATE | positive | `{"actions":[["A",2],["A",3]]}` | `{"exception":null,"lines":[{"sku":"A","quantity":5}],"subtotal":"1000000"}` |
@@ -75,24 +75,24 @@ Execution fields in the input file stay empty; the runner writes separate files 
 | TC-INV15-006 | REQ-15 | COND-INV15-01 | TS-INV15-REJECT | boundary | `{"actions":[["B",16],["C",1]],"method":"COD","approved":true}` | `{"exception":"ValueError:OUT_OF_STOCK","stock_after":{"A":20,"B":15,"C":12},"order_count":0,"charge_count":0}` |
 | TC-INV15-007 | REQ-15 | COND-INV15-02 | TS-INV15-SUCCESS | positive | `{"actions":[["C",2],["A",1]],"method":"COD","approved":true}` | `{"exception":null,"stock_after":{"A":19,"B":15,"C":10},"order_count":1,"charge_count":0}` |
 
-## D. Design counts
+## D. Thống kê thiết kế
 
-- Selected REQs: REQ-02, REQ-07, REQ-09, REQ-10, REQ-15
-- Cases per requirement: REQ-02: 7, REQ-07: 7, REQ-09: 6, REQ-10: 6, REQ-15: 7
-- Total: 33 cases
-- Case kinds: positive=12, boundary=8, negative=13
-- Each REQ has >=2 conditions, >=2 scenarios and >=3 cases. Negative/boundary >=5.
+- Các REQ được chọn: REQ-02, REQ-07, REQ-09, REQ-10, REQ-15
+- Số test case theo từng REQ: REQ-02: 7, REQ-07: 7, REQ-09: 6, REQ-10: 6, REQ-15: 7
+- Tổng cộng: 33 test case
+- Phân loại case: positive=12, boundary=8, negative=13
+- Mỗi REQ có tối thiểu 2 conditions, 2 scenarios và 3 test cases; số case negative/boundary ít nhất 5.
 
-## E. Gaps and risks, not assumed acceptance criteria
+## E. Điểm chưa rõ và rủi ro (không tự xem là quy tắc chấp nhận)
 
-- [ ] Ask BA/PO whether boolean quantity True is acceptable; source code `isinstance(True, int)` yields True in Python, but current tests do not impose an unconfirmed interpretation.
-- [ ] Price freeze at add vs checkout is **not specified** (Part 3.4); do not silently choose an oracle.
-- [ ] Network failure, concurrency and persistence are outside the in-memory model; risk noted but not asserted as covered.
-- [ ] The chosen cases do not replace standalone validation of worked example REQ-06/08/11.
+- [ ] Hỏi BA/PO liệu `True` có được chấp nhận làm số lượng hay không. Trong Python, `isinstance(True, int)` trả về `True`; bộ test hiện chưa tự áp đặt cách hiểu chưa được xác nhận.
+- [ ] Chưa xác định thời điểm cố định giá: khi thêm vào giỏ hay khi checkout (Phần 3.4). Không tự chọn oracle nếu thiếu quy tắc.
+- [ ] Lỗi mạng, xử lý đồng thời và lưu trữ lâu dài nằm ngoài mô hình in-memory; ghi nhận rủi ro nhưng không tuyên bố đã kiểm thử.
+- [ ] Bộ test mới không thay thế việc kiểm chứng riêng những REQ mẫu 06/08/11.
 
-## F. Two untested risks if current selected suite has zero FAIL
+## F. Hai rủi ro chưa kiểm thử khi bộ test không có FAIL
 
-1. **Concurrent inventory reservations:** in-memory sequential reserve checks are not proof against two requests racing on the same SKU; the model has no database lock/concurrency simulation.
-2. **Changing product prices between add-to-cart and checkout:** acceptance rules do not determine which price to lock; the resulting order amount cannot be objectively judged before a BA/PO decision.
+1. **Hai yêu cầu giữ hàng đồng thời:** kiểm tra tồn kho tuần tự trong bộ nhớ không chứng minh được tính đúng khi hai yêu cầu cạnh tranh cùng SKU; mô hình không có cơ chế khóa cơ sở dữ liệu hoặc mô phỏng concurrency.
+2. **Giá sản phẩm thay đổi giữa khi thêm giỏ và checkout:** acceptance criteria chưa xác định phải giữ giá ở thời điểm nào; chưa thể đánh giá khách quan tổng tiền đơn hàng nếu BA/PO chưa làm rõ.
 
-These are disclosures for the assignment’s conditional no-FAIL branch, **not claims of existing defects**.
+Đây là hai rủi ro được trình bày theo nhánh yêu cầu khi không có FAIL; **không phải kết luận rằng ứng dụng đã có hai bug này**.

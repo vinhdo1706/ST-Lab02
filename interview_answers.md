@@ -1,4 +1,4 @@
-# STLab02 – Part 4: Interview Questions & Code Review (P6 – nội dung trả lời)
+# STLab02 – Part 4: Interview Questions & Code Review (nội dung trả lời)
 
 **Nguồn câu hỏi:** Requirement, Phần 4, các câu 1–20 và Code Interview A–C. Ví dụ minh họa bám EduCommerce gốc, không thay thế kết quả thực thi Part 1.
 

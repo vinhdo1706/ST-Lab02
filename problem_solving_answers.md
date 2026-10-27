@@ -1,4 +1,4 @@
-# STLab02 – Part 3: Problem Solving (P6 – nội dung trả lời, chưa phải bản nháp PDF)
+# STLab02 – Part 3: Problem Solving (nội dung trả lời tám tình huống)
 
 **Nguồn đề:** `STLab02 - Test Case Execution (Requirement)(1).docx`, Part 3, mục 3.1–3.8.  
 **Nguồn hệ thống:** `STLab02 - Test Case Execution (Instruction)(1).docx`, EduCommerce gốc tại mục 2.6.  

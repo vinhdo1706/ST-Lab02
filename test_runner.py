@@ -248,11 +248,11 @@ def make_dashboard(records, output, started_at):
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>STLab02 · EduCommerce Test Dashboard</title>
 <style>body{{font:15px/1.5 system-ui,Arial,sans-serif;color:#223044;background:#f6f8fb;margin:0}}main{{max-width:1120px;margin:auto;padding:36px 22px}}h1{{margin:0 0 6px}}.small{{color:#65758c}}.cards{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:22px 0}}.card,section{{background:white;border:1px solid #dde5ed;border-radius:12px;padding:16px}}.num{{font-size:28px;font-weight:700}}section{{margin:16px 0;overflow-x:auto}}table{{width:100%;border-collapse:collapse;font-size:13px}}th,td{{padding:9px;text-align:left;border-bottom:1px solid #e7edf3}}th{{background:#edf3f8}}.legend{{margin-right:18px}}i{{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}}svg{{max-width:100%;height:auto}}.label{{font-size:13px;fill:#37465c;font-weight:600}}.note{{background:#fff7e8;border-left:4px solid #ad781b;padding:10px 14px}}</style></head>
-<body><main><h1>EduCommerce · Test Execution</h1><div class="small">Run (UTC): {html.escape(started_at)} · 5 selected requirements: REQ-02, 07, 09, 10, 15</div>
-<div class="cards"><div class="card"><div class="small">Loaded cases</div><div class="num">{total}</div></div><div class="card"><div class="small">PASS</div><div class="num">{counts['PASS']}</div></div><div class="card"><div class="small">FAIL</div><div class="num">{counts['FAIL']}</div></div><div class="card"><div class="small">BLOCKED</div><div class="num">{counts['BLOCKED']}</div></div><div class="card"><div class="small">Pass rate of executed</div><div class="num">{rate}</div></div></div>
-<section><h2>Status by requirement</h2><p>{legend}</p><svg viewBox="0 0 560 {len(by_req)*55+50}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bar chart statuses by requirement">{svg}</svg></section>
-<section><h2>Case results</h2><table><thead><tr><th>Test case</th><th>REQ</th><th>Scenario</th><th>Status</th><th>Time (ms)</th><th>Detail</th></tr></thead><tbody>{''.join(rows)}</tbody></table></section>
-<p class="note">Loaded = PASS + FAIL + BLOCKED ({total} = {counts['PASS']} + {counts['FAIL']} + {counts['BLOCKED']}). Pass rate = PASS/(PASS + FAIL); BLOCKED is reported separately, never discarded. See CSV for full expected and actual results.</p>
+<body><main><h1>EduCommerce · Test Execution</h1><div class="small">Thời điểm chạy (UTC): {html.escape(started_at)} · 5 yêu cầu được chọn: REQ-02, 07, 09, 10, 15</div>
+<div class="cards"><div class="card"><div class="small">Số test case đã nạp</div><div class="num">{total}</div></div><div class="card"><div class="small">PASS</div><div class="num">{counts['PASS']}</div></div><div class="card"><div class="small">FAIL</div><div class="num">{counts['FAIL']}</div></div><div class="card"><div class="small">BLOCKED</div><div class="num">{counts['BLOCKED']}</div></div><div class="card"><div class="small">Tỷ lệ PASS trong số case đã chạy</div><div class="num">{rate}</div></div></div>
+<section><h2>Trạng thái theo yêu cầu</h2><p>{legend}</p><svg viewBox="0 0 560 {len(by_req)*55+50}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Biểu đồ trạng thái theo yêu cầu">{svg}</svg></section>
+<section><h2>Kết quả từng test case</h2><table><thead><tr><th>Test case</th><th>REQ</th><th>Tình huống</th><th>Trạng thái</th><th>Thời gian (ms)</th><th>Chi tiết</th></tr></thead><tbody>{''.join(rows)}</tbody></table></section>
+<p class="note">Số case đã nạp = PASS + FAIL + BLOCKED ({total} = {counts['PASS']} + {counts['FAIL']} + {counts['BLOCKED']}). Tỷ lệ PASS = PASS/(PASS + FAIL); BLOCKED được thống kê riêng, không bị loại bỏ. Xem tệp CSV để đối chiếu đầy đủ expected và actual.</p>
 </main></body></html>'''
     output.write_text(html_text, encoding='utf-8')
     return by_req, rate
@@ -269,7 +269,7 @@ def main():
     try:
         rows = read_cases(Path(args.cases))
     except Exception as exc:
-        print(f'BLOCKED: Cannot read test data: {type(exc).__name__}: {exc}')
+        print(f'BLOCKED: Không thể đọc dữ liệu kiểm thử: {type(exc).__name__}: {exc}')
         raise SystemExit(2) from exc
     ids = Counter(row['test_case_id'].strip() for row in rows)
     repeated_ids = {key for key, value in ids.items() if value > 1}
@@ -297,11 +297,11 @@ def main():
                 'BLOCKED': counts['BLOCKED'], 'pass_rate_executed': rate,
                 'selected_requirements': sorted(SUPPORTED)}
     (output/'run_metadata.json').write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding='utf-8')
-    print('Run UTC:', started_at)
+    print('Thời điểm chạy (UTC):', started_at)
     for result in records:
         print(f"{result['test_case_id']:<20} {result['requirement_id']:<7} {result['execution_status']:<7} {result['error_message']}")
     print(f"TOTAL={len(rows)} PASS={counts['PASS']} FAIL={counts['FAIL']} BLOCKED={counts['BLOCKED']} PASS_RATE_EXECUTED={rate}")
-    print('Files:', ', '.join(str(p) for p in sorted(output.iterdir()) if p.is_file()))
+    print('Các tệp kết quả:', ', '.join(str(p) for p in sorted(output.iterdir()) if p.is_file()))
     # Nonzero exit when any FAIL/BLOCKED; artifacts still written for diagnosis.
     return 0 if counts['FAIL'] == 0 and counts['BLOCKED'] == 0 else 1
 
