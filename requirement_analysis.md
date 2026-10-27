@@ -1,7 +1,7 @@
 # STLab02 – Requirement Analysis & Test Design
 
 **Nguồn yêu cầu:** STLab02 Requirement (Phần 1) và STLab02 Instruction (mục 1.2, 2.6).
-**Phạm vi đã chốt:** REQ-02, REQ-07, REQ-09, REQ-10, REQ-15. REQ-06/08/11 là ví dụ có sẵn trong Instruction, không thuộc bộ yêu cầu được lựa chọn.
+**Phạm vi kiểm thử:** REQ-02, REQ-07, REQ-09, REQ-10, REQ-15. REQ-06/08/11 là ví dụ có sẵn trong Instruction, không thuộc bộ yêu cầu được lựa chọn.
 
 ## A. Phân tích yêu cầu
 

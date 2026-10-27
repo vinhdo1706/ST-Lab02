@@ -2,7 +2,7 @@
 
 **Nguồn đề:** `STLab02 - Test Case Execution (Requirement)(1).docx`, Part 3, mục 3.1–3.8.  
 **Nguồn hệ thống:** `STLab02 - Test Case Execution (Instruction)(1).docx`, EduCommerce gốc tại mục 2.6.  
-Các test case trong tài liệu này là **đề xuất test scenario bổ sung cho bài giải tình huống**, không được tự động tính vào 33 case của Part 1 hay tuyên bố đã được thực thi. “Thay đổi dự kiến” chỉ là giải pháp giả định, không sửa source gốc theo baseline P3-3A.
+Các test case trong phần giải quyết tình huống minh họa các phương án kiểm thử được đề xuất; chúng được phân biệt với 33 test case đã thực thi của Phần 1 trong `test_cases.csv`. Các thay đổi về mã nguồn nêu tại đây là phương án phân tích, chưa được áp dụng vào ứng dụng gốc.
 
 ## 3.1. Hai SKU, một SKU thiếu tồn kho
 

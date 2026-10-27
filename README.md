@@ -69,7 +69,7 @@ Lần chạy được lưu trong project diễn ra lúc **21:42:26 ngày 27/10/2
 6. Chạy cell cuối để tải `STLab02_Colab_Execution.zip`, chứa các tệp kết quả trong `reports/`.
 7. Lưu kết quả tải về và cập nhật đồng bộ các file trong thư mục `reports/` của project nếu thực hiện lần chạy mới.
 
-**Lưu ý:** Runtime Colab có thể bị xóa hoặc ngắt kết nối. Thư mục `Work/HK1_2627/Software Testing/Labs/ST-Lab02/` trên máy cá nhân là nơi lưu source lâu dài. Notebook tải lên Colab phải tương ứng với ba file source/data cùng phiên bản.
+**Lưu ý:** Môi trường chạy Colab có tính tạm thời. Khi thực thi lại, cần sử dụng notebook, mã nguồn và dữ liệu kiểm thử cùng phiên bản; lưu các tệp kết quả sau khi chạy.
 
 ## 5. Chạy cục bộ bằng VS Code (tùy chọn)
 
@@ -108,4 +108,4 @@ Hai cột bổ sung `case_type` và `test_steps` hỗ trợ đọc test case. C�
 
 **Repository:** https://github.com/vinhdo1706/ST-Lab02
 
-Báo cáo PDF hoàn chỉnh là sản phẩm nộp bài riêng, được bổ sung sau khi hoàn tất kiểm chứng và minh chứng. Repository này chứa source, dữ liệu và kết quả thực thi để hỗ trợ tái hiện.
+Repository cung cấp mã nguồn, dữ liệu kiểm thử, notebook, hướng dẫn thực thi và kết quả để phục vụ đối chiếu, tái hiện bài thực hành.

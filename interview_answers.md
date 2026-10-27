@@ -51,7 +51,7 @@ Idempotency nghĩa là xử lý lại cùng request/key không tạo thêm tác 
 Đầu tiên xác minh acceptance rule và dữ liệu expected. Sau đó tái chạy trong fixture mới với input tối giản, kiểm lại cách dispatch/compare. Nếu runner parse nhầm CSV hoặc dùng fixture sai thì đây là lỗi test, không nên mở defect sản phẩm. Chỉ kết luận bug khi hành vi thực tế vi phạm oracle hợp lệ và có chứng cứ từ source/trạng thái.
 
 ## 17. Gradio dashboard có thay raw log không?
-Không. Dashboard tổng hợp tốt nhưng có thể che mất dòng lỗi, thông tin exception hoặc số case bị bỏ qua. Evidence cần gồm raw execution CSV/log, thời điểm chạy, các case ID và dữ liệu liên quan. Lab 02 đã chốt HTML thay Gradio, nhưng nguyên tắc không thay raw log là như nhau.
+Không. Dashboard tổng hợp tốt nhưng có thể che mất dòng lỗi, thông tin exception hoặc số case bị bỏ qua. Evidence cần gồm raw execution CSV/log, thời điểm chạy, các case ID và dữ liệu liên quan. Bài thực hành sử dụng dashboard HTML; nguyên tắc không thay thế nhật ký thực thi gốc vẫn được áp dụng.
 
 ## 18. Sanity và Regression sau sửa bug?
 Sanity kiểm nhanh xem phần vừa sửa hoạt động ở đường đi chủ đạo, ví dụ shipping tại 500k. Regression chạy những test có nguy cơ chịu tác động: 499999/500000/500001, các case outer và checkout total. So sánh trước/sau, không điều chỉnh expected cho theo chương trình nếu requirement không đổi.
@@ -110,4 +110,4 @@ assert len(app.payments.charges) == 0
 
 **Cách kiểm:** cho TC đầu trừ stock hoặc đổi giá, chạy TC sau; đảo thứ tự và so sánh. Nếu expected thay đổi vì lịch sử các TC, fixture chưa độc lập.
 
-**Cách sửa:** gọi `fixture()`/`fresh_state()` **bên trong vòng lặp thực thi từng case**. Không đặt một `Checkout()` toàn cục cho cả suite. Khi cần cùng một sequence trong một test, giữ state trong chính test đó, không dùng chung xuyên test. Runner P6 khởi tạo fixture cho từng dòng CSV.
+**Cách sửa:** gọi `fixture()`/`fresh_state()` **bên trong vòng lặp thực thi từng case**. Không đặt một `Checkout()` toàn cục cho cả suite. Khi cần cùng một sequence trong một test, giữ state trong chính test đó, không dùng chung xuyên test. Runner khởi tạo fixture riêng cho từng dòng CSV.
